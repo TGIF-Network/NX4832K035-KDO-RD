@@ -6,6 +6,9 @@
 set -o errexit
 set -o pipefail
 
+
+set -o errexit
+set -o pipefail
 ver="20250204"
 dirn=/etc/profiles.ini
 declare -i pnum

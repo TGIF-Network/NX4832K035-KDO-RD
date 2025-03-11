@@ -10,10 +10,6 @@
 set -o errexit
 set -o pipefail
 
-
-
-
-
  m1=$(sed -n '/^[ \t]*\[DMR\]/,/\[/s/^[ \Enable[ \t]*=[ \t]*//p' /etc/mmdvmhost)
  m2=$(sed -n '/^[ \t]*\[D-Star\]/,/\[/s/^[ \Enable[ \t]*=[ \t]*//p' /etc/mmdvmhost)
  m3=$(sed -n '/^[ \t]*\[System Fusion\]/,/\[/s/^[ \Enable[ \t]*=[ \t]*//p' /etc/mmdvmhost)

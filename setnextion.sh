@@ -34,3 +34,11 @@ sudo mount -o remount,rw /
                 sudo sed -i '/^\[/h;G;/NextionDriver/s/\(^SleepWhenInactive=\).*/\1'"$p2"'/m;P;d' /etc/mmdvmhost
                 sudo sed -i '/^\[/h;G;/NextionDriver/s/\(^RemoveDim=\).*/\1'"$p3"'/m;P;d' /etc/mmdvmhost
 
+#systemctl stop mmdvmhost.service
+#systemctl stop nextiondriver.service
+
+#sleep 2
+
+#systemctl start mmdvmhost.service
+#systemctl start nextiondriver.service
+

@@ -31,6 +31,7 @@ name=""
 while read -r line
 do
 	mode=$(echo "$line"| cut -d ' ' -f 4 | tr -d ',')
+
 if [ "$mode" == "DMR" ]; then
 	call=$(echo "$line" | cut -d' ' -f14)
 fi
@@ -52,7 +53,6 @@ if [ "$mode" == "YSF" ]; then
 		call=$(echo "$line" | cut -d' ' -f16)
 	fi
 fi
-
 	tm=$(echo "$line" | cut -d' ' -f3)
 	dt=$(echo "$line" | cut -d' ' -f2)
 	
@@ -103,8 +103,7 @@ var="${list5:0:400}"
 
 f1=$(ls -tr /var/log/pi-star/MMDVM* | tail -1)
 #list1=$(sudo sed -n '/received network end of voice transmission from/p' $f1 | tail -n 50 | sort -r -k15 -u |tail -n8)
-#list1=$(cat /var/log/pi-star/MMDVM* | grep "end of transmission from" | tail -16 | sort -u -k15 | sort -k3 | tail -n20)
-list1=$(cat /var/log/pi-star/MMDVM* | grep "transmission from" | tail -16 | sort -u -k15 | sort -k3 | tail -n20)
+list1=$(cat /var/log/pi-star/MMDVM* | grep "end of transmission from" | tail -16 | sort -u -k15 | sort -k3 | tail -n20)
 #echo "5 $list1"
 #echo "  "
 line=$(echo "$list1" | tail -n8)

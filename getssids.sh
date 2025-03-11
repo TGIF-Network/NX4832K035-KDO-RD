@@ -8,9 +8,6 @@
 # KF6S                                            07-01-2019  #
 ###############################################################
 
-
-
-
 sudo mount -o remount,rw /
 sleep 1s
 sudo iwlist wlan0 scan | grep ESSID | awk '{print $1}' > /usr/local/etc/Nextion_Support/essid.txt

@@ -10,10 +10,7 @@
 set -o errexit
 set -o pipefail
 
-if [ "$1" = 1 ]; then  
-#sudo cat /etc/mmdvmhost | grep "\[DMR\]" -A 1 | grep "Enable=" | cut -b 8-9
-
- sed -n '/^[ \t]*\[DMR\]/,/\[/s/^[ \Enable[ \t]*=[ \t]*//p' /etc/mmdvmhost
+if [ "$1" = 1 ]; then  sudo cat /etc/mmdvmhost | grep "\[DMR\]" -A 1 | grep "Enable=" | cut -b 8-9
 fi
 
 if [ "$1" = 2 ]; then  sudo cat /etc/mmdvmhost | grep "\[D-Star\]" -A 1 | grep "Enable=" | cut -b 8-9

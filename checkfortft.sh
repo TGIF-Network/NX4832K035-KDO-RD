@@ -26,14 +26,13 @@ dt4=$(date -r /usr/local/etc/NX4832K035.tft | cut -d " " -f5)
 dtt=$(stat /usr/local/etc/NX4832K035.tft | grep Birth | cut -d '.' -f1 | cut -d ' ' -f3,4)
 #echo "$dtt"
 
-tag=$(git -C /home/pi-star/Nextion_Temp/ tag)
  if [ ! -f "$FILE" ]; then
         # Copy failed
       echo "No TFT File Available to Flash - Try Again"
   else
 #   echo "NX4832K035.tft \r$dt1 $dt2 $dt3"
 #   echo "NX4832K035.tft File Found!\r$dt0 $dt1 $dt2 $dt3$dt4"
-   echo "NX4832K035.tft File Found!\r Repo Tag: $tag"
+   echo "NX4832K035.tft File Found!\r $dtt"
 #   echo "NX4832K035.tft File Found!\r $dt4"
 
  fi

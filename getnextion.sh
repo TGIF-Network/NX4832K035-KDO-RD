@@ -17,8 +17,8 @@ dirn=/etc/mmdvmhost
 		m4=$(sed -nr "/^\[NextionDriver\]/ { :l /^RemoveDim[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" $dirn)
 		m5=$(sed -nr "/^\[Nextion\]/ { :l /^Brightness[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" $dirn)
 		m6=$(sed -nr "/^\[Nextion\]/ { :l /^IdleBrightness[ ]*=/ { s/.*=[ ]*//; p; q;}; n; b l;}" $dirn)
-		m7=$(git -C /home/pi-star/Nextion_Temp/ tag)
 
-               	mt="$m1|$m2|$m3|$m4|$m5|$m6|$m7"
+
+               	mt="$m1|$m2|$m3|$m4|$m5|$m6"
 		echo "$mt"
 
