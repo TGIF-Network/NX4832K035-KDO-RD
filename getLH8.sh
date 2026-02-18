@@ -49,9 +49,11 @@ fi
 if [ "$mode" == "YSF" ]; then
 	call=$(echo "$line" | cut -d' ' -f11)
 	if [ "$call" == "" ]; then
-		call=$(echo "$line" | cut -d' ' -f16)
+#		call=$(echo "$line" | cut -d' ' -f16)
+		call=$(echo "$line" | cut -d' ' -f9)
 	fi
 fi
+#M: 2026-02-18 22:28:26.989 YSF, received network data from N4HYS      to DG-ID 0 at N4HYS
 
 	tm=$(echo "$line" | cut -d' ' -f3)
 	dt=$(echo "$line" | cut -d' ' -f2)
@@ -104,7 +106,12 @@ var="${list5:0:400}"
 f1=$(ls -tr /var/log/pi-star/MMDVM* | tail -1)
 #list1=$(tail -n 100 /var/log/pi-star/MM* | grep 'transmission from' |  awk '!seen[$14]++' | sort -k3n)
 #list2=$(tail -n 100 /var/log/pi-star/MM* | grep 'transmission from' |  awk '{seen[$14]=$0} END {for (key in seen) print seen[key]}' | sort -k3n)
-list2=$(tail -n 200 /var/log/pi-star/MM* | grep 'transmission from' |  awk '{seen[$14]=$0} END {for (key in seen) print seen[key]}')
+#list2=$(tail -n 200 /var/log/pi-star/MM* | grep 'transmission from' |  awk '{seen[$14]=$0} END {for (key in seen) print seen[key]}')
+list2=$(tail -n 200 /var/log/pi-star/MM* 2>/dev/null |
+        grep -E 'transmission from|received network data from' |
+        awk '!seen[$14]++ {print $0}' )
+
+
 list3=$(echo "$list2" | sort -k2 -k3,1nr | tail -n 20)
 list1=$(echo "$list3" | tail -n 8)
 
