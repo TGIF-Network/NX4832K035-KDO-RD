@@ -20,7 +20,6 @@ function domode2
     do
         mode=$(echo "$line" | cut -d' ' -f4 | tr -d ',')
         call=$(echo "$line" | awk '{for(i=1;i<=NF;i++) if($i=="from") print $(i+1)}')
-
         [ -z "$call" ] && continue
 
         tm=$(echo "$line" | cut -d' ' -f3)
@@ -52,7 +51,6 @@ function domode2
 
     done <<< "$list1"
 
-    # Print without trailing blank
     printf "%s|" "${output[@]}"
     echo
 }
@@ -69,25 +67,29 @@ if [[ -z "$latest" ]]; then
     exit 1
 fi
 
-# 2️⃣ Extract recent lines and remove duplicate calls (keep newest)
-list2=$(tail -n 100 "$latest" 2>/dev/null | \
-grep -iE 'voice transmission from|received network data from' | \
-awk '
+# 2️⃣ Get recent activity lines
+list2=$(tail -n 200 "$latest" 2>/dev/null | \
+grep -iE 'voice transmission from|received network data from')
+
+# 3️⃣ Sort newest first
+list3=$(echo "$list2" | sort -k2,3r)
+
+# 4️⃣ Remove older duplicates (newest kept)
+list4=$(echo "$list3" | awk '
 {
     if ($0 ~ /from [^ ]+/) {
         split($0, a, "from ")
         split(a[2], b, " ")
         callsign = b[1]
-        if (callsign && !seen[callsign]++) print $0
+        if (callsign && !seen[callsign]++) print
     }
-}'
-)
+}')
 
-# 3️⃣ Sort newest first and keep 16 unique calls
-list3=$(echo "$list2" | sort -k2,3r | head -n 16)
+# 5️⃣ Keep newest 16 unique calls
+list5=$(echo "$list4" | head -n 16)
 
-# 4️⃣ Load into array
-mapfile -t arr <<< "$list3"
+# 6️⃣ Load into array
+mapfile -t arr <<< "$list5"
 
 group_size=4
 start=$(( p * group_size ))
