@@ -69,7 +69,9 @@ fi
 
 # 2️⃣ Get recent activity lines
 list2=$(tail -n 200 "$latest" 2>/dev/null | \
-grep -iE 'voice transmission from|received network data from')
+
+#grep -iE 'voice transmission from|received network data from')
+grep -iE 'from')
 
 # 3️⃣ Sort newest first
 list3=$(echo "$list2" | sort -k2,3r)
