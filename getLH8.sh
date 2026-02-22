@@ -12,6 +12,28 @@ p="$1"
 [ -z "$p" ] && p=0
 
 ####################################################
+getysfinfo() {
+
+DATA=$(curl -s --max-time 5 "https://api.hamdb.org/v1/${call}/json/hamdb")
+
+name=$(echo "$DATA" | sed -n 's/.*"fname":"\([^"]*\)".*/\1/p')
+#LNAME=$(echo "$DATA" | sed -n 's/.*"name":"\([^"]*\)".*/\1/p')
+prov=$(echo "$DATA" | sed -n 's/.*"state":"\([^"]*\)".*/\1/p')
+cntry=$(echo "$DATA" | sed -n 's/.*"country":"\([^"]*\)".*/\1/p')
+
+if [ "$cntry" = "United States" ]; then
+   cntry="USA"
+fi
+
+#if [ -z "$FNAME" ] || [ -z "$LNAME" ]; then
+#    echo "$CALL"
+#else
+#    echo "$CALL - $FNAME $LNAME - $STATE - $COUNTRY"
+#fi
+}
+
+
+
 function domode2
 {
     output=()
@@ -42,8 +64,9 @@ function domode2
         dtm2=$(date -d "${dtm} UTC" '+%H:%M:%S')
 
         if [ "$mode" = "YSF" ]; then
-            output+=("$dtm2 $mode $call")
-        fi
+           getysfinfo     
+             output+=("$dtm2 $mode $call $name $prov $cntry")
+   fi
 
         if [ "$mode" = "DMR" ]; then
             output+=("$dtm2 $mode $call $name $prov $cntry")
