@@ -1,105 +1,93 @@
 #!/bin/bash
 #################################################
-#  Get Last 8 Heard Last from MMDVMHost Log     #
-#                                               #
-#  VE3RD                        2020-05-03      #
+#  Get Last 16 Heard from MMDVMHost Log
+#  Stable Version for 10-sec Timer Execution
 #################################################
-
-set -o errexit
-set -o pipefail
 
 p="$1"
 [ -z "$p" ] && p=0
 
-####################################################
+###############################################
 getysfinfo() {
 
-DATA=$(curl -s --max-time 5 "https://api.hamdb.org/v1/${call}/json/hamdb")
+DATA=$(timeout 6 curl -4 -s \
+  --connect-timeout 3 \
+  --max-time 5 \
+  "https://api.hamdb.org/v1/${call}/json/hamdb")
 
-name=$(echo "$DATA" | sed -n 's/.*"fname":"\([^"]*\)".*/\1/p')
-#LNAME=$(echo "$DATA" | sed -n 's/.*"name":"\([^"]*\)".*/\1/p')
-prov=$(echo "$DATA" | sed -n 's/.*"state":"\([^"]*\)".*/\1/p')
-cntry=$(echo "$DATA" | sed -n 's/.*"country":"\([^"]*\)".*/\1/p')
+name=$(echo "$DATA" | tr -d '\n' | sed -n 's/.*"fname":"\([^"]*\)".*/\1/p')
+prov=$(echo "$DATA" | tr -d '\n' | sed -n 's/.*"state":"\([^"]*\)".*/\1/p')
+cntry=$(echo "$DATA" | tr -d '\n' | sed -n 's/.*"country":"\([^"]*\)".*/\1/p')
+
+[ -z "$name" ] && name="NoName"
+[ -z "$prov" ] && prov="NA"
 
 if [ "$cntry" = "United States" ]; then
    cntry="USA"
 fi
-
-#if [ -z "$FNAME" ] || [ -z "$LNAME" ]; then
-#    echo "$CALL"
-#else
-#    echo "$CALL - $FNAME $LNAME - $STATE - $COUNTRY"
-#fi
 }
+###############################################
 
+###############################################
+domode2() {
 
+output=()
 
-function domode2
-{
-    output=()
+while read -r line
+do
+    mode=$(echo "$line" | awk '{print $4}' | tr -d ',')
+    call=$(echo "$line" | awk '{for(i=1;i<=NF;i++) if($i=="from") print $(i+1)}')
+    [ -z "$call" ] && continue
 
-    while read -r line
-    do
-        mode=$(echo "$line" | cut -d' ' -f4 | tr -d ',')
-        call=$(echo "$line" | awk '{for(i=1;i<=NF;i++) if($i=="from") print $(i+1)}')
-        [ -z "$call" ] && continue
+    tm=$(echo "$line" | awk '{print $3}')
+    dt=$(echo "$line" | awk '{print $2}')
+    dtm="$dt $tm"
 
-        tm=$(echo "$line" | cut -d' ' -f3)
-        dt=$(echo "$line" | cut -d' ' -f2)
-        dtm="$dt $tm"
+    dataline=$(grep -m1 "^.*,${call}," /usr/local/etc/stripped2.csv 2>/dev/null)
 
-        dataline=$(grep -m1 "^.*,${call}," /usr/local/etc/stripped2.csv 2>/dev/null)
+    name="NoName"
+    prov="NA"
+    cntry=""
 
-        name="NoName"
-        prov="NA"
-        cntry=""
+    if [ -n "$dataline" ]; then
+        name=$(echo "$dataline" | cut -d',' -f3)
+        prov=$(echo "$dataline" | cut -d',' -f6)
+        cntry=$(echo "$dataline" | cut -d',' -f7 | tr -d '\r')
+        [ -z "$prov" ] && prov="NA"
+    fi
 
-        if [ -n "$dataline" ]; then
-            name=$(echo "$dataline" | cut -d',' -f3)
-            prov=$(echo "$dataline" | cut -d',' -f6)
-            cntry=$(echo "$dataline" | cut -d',' -f7 | tr -d '\r')
-            [ -z "$prov" ] && prov="NA"
-        fi
+    # If YSF and not found locally, query HamDB
+    if [ "$mode" = "YSF" ] && [ "$name" = "NoName" ]; then
+        getysfinfo
+    fi
 
-        dtm2=$(date -d "${dtm} UTC" '+%H:%M:%S')
+    dtm2=$(date -d "${dtm} UTC" '+%H:%M:%S' 2>/dev/null)
+    [ -z "$dtm2" ] && dtm2="$tm"
 
-        if [ "$mode" = "YSF" ]; then
-           getysfinfo     
-             output+=("$dtm2 $mode $call $name $prov $cntry")
-   fi
+    output+=("$dtm2 $mode $call $name $prov $cntry")
 
-        if [ "$mode" = "DMR" ]; then
-            output+=("$dtm2 $mode $call $name $prov $cntry")
-        fi
+done <<< "$list1"
 
-    done <<< "$list1"
-
-    printf "%s|" "${output[@]}"
-    echo
+printf "%s|" "${output[@]}"
+echo
 }
+###############################################
 
-######################################
-# Start of Main Program
-######################################
+###############################################
+# Main Program
+###############################################
 
-# 1️⃣ Get newest Pi-Star log
 latest=$(ls -t /var/log/pi-star/MM* 2>/dev/null | head -n1)
 
-if [[ -z "$latest" ]]; then
-    echo "No Pi-Star log files found."
-    exit 1
-fi
+[ -z "$latest" ] && exit 0
 
-# 2️⃣ Get recent activity lines
-list2=$(tail -n 200 "$latest" 2>/dev/null | \
+list2=$(tail -n 200 "$latest" 2>/dev/null | grep -i 'from')
+[ -z "$list2" ] && exit 0
 
-#grep -iE 'voice transmission from|received network data from')
-grep -iE 'from')
+# Stable reverse chronological sort
+list3=$(echo "$list2" | sort -k2,2r -k3,3r)
 
-# 3️⃣ Sort newest first
-list3=$(echo "$list2" | sort -k2,3r)
-
-# 4️⃣ Remove older duplicates (newest kept)
+# Remove duplicates (keep newest)
 list4=$(echo "$list3" | awk '
 {
     if ($0 ~ /from [^ ]+/) {
@@ -110,20 +98,19 @@ list4=$(echo "$list3" | awk '
     }
 }')
 
-# 5️⃣ Keep newest 16 unique calls
+# Keep newest 16
 list5=$(echo "$list4" | head -n 16)
 
-# 6️⃣ Load into array
 mapfile -t arr <<< "$list5"
+
+# Ensure always 16 entries (prevents blank group 0)
+while (( ${#arr[@]} < 16 )); do
+    arr+=(" ")
+done
 
 group_size=4
 start=$(( p * group_size ))
 end=$(( start + group_size - 1 ))
-
-if (( start >= ${#arr[@]} )); then
-    echo "Requested group $p is out of range."
-    exit 1
-fi
 
 (( end >= ${#arr[@]} )) && end=$(( ${#arr[@]} - 1 ))
 
