@@ -23,10 +23,10 @@ if [ -z "$encrypted" ]; then
 fi
 
 decrypted=$(decode_string "$encrypted")
-if [ "$decrypted" == "raspberry" ]; then
-	echo "Sorry: PW= raspbery not Accepted\rPlease select another password"
-	exit
-fi
+#if [ "$decrypted" == "raspberry" ]; then
+#	echo "Sorry: PW= raspbery not Accepted\rPlease select another password"
+#	exit
+#fi
 
 echo "Pi-star Password is now $decrypted"
 
